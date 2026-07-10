@@ -1,0 +1,1114 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<title>LIRA 분석 주파수 가이드</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600&family=JetBrains+Mono:wght@300;400;500;600;700&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    color-scheme: dark;
+    --bg-0: #0a0d0f;
+    --bg-1: #11161a;
+    --bg-2: #181f25;
+    --line: #2a3440;
+    --line-bright: #3a4a5a;
+    --ink: #e8eef3;
+    --ink-dim: #8a9aa6;
+    --ink-faint: #586673;
+    --accent: #ffb84a;
+    --accent-soft: #ffb84a22;
+    --green: #6ed09e;
+    --red: #ef6b5a;
+    --blue: #5ab1ff;
+    --purple: #b18cff;
+    --glow-1: rgba(255, 184, 74, 0.08);
+    --glow-2: rgba(90, 177, 255, 0.05);
+  }
+
+  html[data-theme="light"] {
+    color-scheme: light;
+    --bg-0: #f4f1ea;
+    --bg-1: #fdfcf9;
+    --bg-2: #ece7dc;
+    --line: #ddd6c6;
+    --line-bright: #c2b8a2;
+    --ink: #21272e;
+    --ink-dim: #5b6670;
+    --ink-faint: #8f99a2;
+    --accent: #b56e00;
+    --accent-soft: #b56e001f;
+    --green: #23805a;
+    --red: #bf4a38;
+    --blue: #1e63a8;
+    --purple: #6f4ec4;
+    --glow-1: rgba(181, 110, 0, 0.07);
+    --glow-2: rgba(30, 99, 168, 0.05);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    background: var(--bg-0);
+    color: var(--ink);
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 14px;
+    line-height: 1.55;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    background:
+      radial-gradient(ellipse 800px 400px at 80% -10%, var(--glow-1), transparent 70%),
+      radial-gradient(ellipse 600px 600px at 0% 100%, var(--glow-2), transparent 70%),
+      var(--bg-0);
+    transition: background-color 0.25s, color 0.25s;
+  }
+
+  .container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 48px 32px 80px;
+  }
+
+  /* ========== HEADER ========== */
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 24px;
+    margin-bottom: 40px;
+    gap: 24px;
+  }
+  .brand {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    color: var(--ink-faint);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .brand .dot { color: var(--accent); }
+  h1 {
+    font-family: 'Fraunces', serif;
+    font-weight: 400;
+    font-size: 34px;
+    letter-spacing: -0.01em;
+    line-height: 1.05;
+  }
+  h1 em {
+    font-style: italic;
+    color: var(--accent);
+    font-weight: 400;
+  }
+  .subtitle {
+    font-size: 13px;
+    color: var(--ink-dim);
+    margin-top: 8px;
+    max-width: 520px;
+  }
+  /* 토글 버튼: 전환할 테마의 색으로 표시
+     (다크모드 → 밝은 버튼 / 라이트모드 → 어두운 버튼) */
+  .theme-toggle {
+    background: #f4f1ea;
+    border: 1px solid #d8d0bf;
+    color: #2a2f36;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    padding: 7px 13px;
+    cursor: pointer;
+    border-radius: 2px;
+    white-space: nowrap;
+    flex-shrink: 0;
+    transition: all 0.15s;
+  }
+  html[data-theme="light"] .theme-toggle {
+    background: #11161a;
+    border-color: #3a4a5a;
+    color: #e8eef3;
+  }
+  .theme-toggle:hover {
+    border-color: var(--accent);
+  }
+
+  /* 모바일: 토글을 상단 우측에 두고 제목이 전체 폭 사용 */
+  @media (max-width: 640px) {
+    .container { padding: 28px 20px 64px; }
+    header {
+      flex-direction: column-reverse;
+      align-items: stretch;
+      gap: 14px;
+      margin-bottom: 32px;
+    }
+    .theme-toggle { align-self: flex-end; }
+    h1 { font-size: 28px; }
+  }
+
+  /* ========== LAYOUT ========== */
+  .grid {
+    display: grid;
+    grid-template-columns: 380px 1fr;
+    gap: 32px;
+    align-items: start;
+  }
+  @media (max-width: 920px) {
+    .grid { grid-template-columns: 1fr; }
+  }
+  .left-col {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  /* ========== INPUT PANEL ========== */
+  .panel {
+    background: var(--bg-1);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    transition: background-color 0.25s, border-color 0.25s;
+  }
+  .panel-header {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    color: var(--ink-dim);
+    text-transform: uppercase;
+  }
+  .panel-header .num {
+    color: var(--accent);
+    font-weight: 500;
+  }
+  .panel-body {
+    padding: 24px 20px;
+  }
+
+  /* Input field */
+  .input-wrap {
+    margin-bottom: 4px;
+  }
+  .input-label {
+    display: block;
+    font-size: 12px;
+    color: var(--ink-dim);
+    margin-bottom: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.05em;
+  }
+  .input-row {
+    display: flex;
+    align-items: baseline;
+    border-bottom: 1.5px solid var(--line-bright);
+    padding-bottom: 6px;
+    transition: border-color 0.2s;
+  }
+  .input-row:focus-within {
+    border-color: var(--accent);
+  }
+  input[type="number"] {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--ink);
+    font-family: 'Fraunces', serif;
+    font-size: 42px;
+    font-weight: 400;
+    width: 100%;
+  }
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  input[type="number"] { -moz-appearance: textfield; }
+  .unit {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    color: var(--ink-faint);
+    margin-left: 12px;
+  }
+
+  /* Quick presets */
+  .presets {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 12px;
+  }
+  .preset {
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    color: var(--ink-dim);
+    padding: 4px 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all 0.15s;
+  }
+  .preset:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  /* Slider */
+  .slider-wrap {
+    margin-top: 20px;
+  }
+  input[type="range"] {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 2px;
+    background: var(--line-bright);
+    outline: none;
+    cursor: pointer;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px;
+    height: 14px;
+    background: var(--accent);
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid var(--bg-1);
+    box-shadow: 0 0 0 1px var(--accent);
+  }
+  input[type="range"]::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    background: var(--accent);
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid var(--bg-1);
+    box-shadow: 0 0 0 1px var(--accent);
+  }
+  .slider-marks {
+    display: flex;
+    justify-content: space-between;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-faint);
+    margin-top: 8px;
+  }
+
+  /* ========== RESULT: HERO (BW) ========== */
+  .hero {
+    padding: 26px 20px 22px;
+    border-bottom: 1px solid var(--line);
+  }
+  .hero-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-dim);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .hero-label small {
+    display: block;
+    font-size: 10px;
+    color: var(--ink-faint);
+    letter-spacing: 0.05em;
+    margin-top: 2px;
+    text-transform: none;
+  }
+  .hero-value {
+    font-family: 'Fraunces', serif;
+    font-size: 60px;
+    font-weight: 400;
+    color: var(--accent);
+    line-height: 1.05;
+    margin-top: 10px;
+    font-variant-numeric: tabular-nums;
+  }
+  .hero-value .hero-unit {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 15px;
+    color: var(--ink-faint);
+    margin-left: 8px;
+  }
+  .hero-range {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-top: 16px;
+    padding: 10px 14px;
+    background: var(--accent-soft);
+    border-left: 3px solid var(--accent);
+    border-radius: 2px;
+  }
+  .range-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-dim);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .range-values {
+    font-family: 'Fraunces', serif;
+    font-size: 23px;
+    color: var(--ink);
+    line-height: 1.1;
+    font-variant-numeric: tabular-nums;
+  }
+  .range-values small {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-faint);
+    margin-left: 6px;
+  }
+
+  /* ========== RESULT: OUTPUT FREQUENCY ========== */
+  .output-block {
+    padding: 20px 20px 24px;
+  }
+  .output-head {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-dim);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .output-desc {
+    font-size: 11px;
+    color: var(--ink-faint);
+    margin-bottom: 14px;
+  }
+  .freq-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    padding-bottom: 9px;
+  }
+  .chip {
+    flex: 1 1 30px;
+    min-width: 32px;
+    text-align: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    padding: 8px 2px;
+    border: 1px solid var(--line);
+    border-radius: 2px;
+    color: var(--ink-faint);
+    background: transparent;
+    transition: all 0.15s;
+    position: relative;
+  }
+  .chip.invalid {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+  .chip.valid {
+    color: var(--ink-dim);
+    border-color: var(--line-bright);
+    cursor: pointer;
+  }
+  .chip.valid:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .chip.selected {
+    background: var(--accent);
+    color: var(--bg-0);
+    border-color: var(--accent);
+    font-weight: 600;
+  }
+  .chip.primary::before {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--accent);
+  }
+  .output-readout {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11.5px;
+    color: var(--ink-dim);
+    margin-top: 10px;
+    line-height: 1.7;
+  }
+  .output-readout b {
+    color: var(--accent);
+    font-weight: 600;
+  }
+  .output-readout .warn {
+    color: var(--red);
+  }
+
+  /* ========== CHART PANEL ========== */
+  .chart-panel {
+    background: var(--bg-1);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    overflow: hidden;
+    transition: background-color 0.25s, border-color 0.25s;
+  }
+  .chart-wrap {
+    padding: 16px 16px 4px;
+    position: relative;
+  }
+  svg.chart {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+  .chart-axis text {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    fill: var(--ink-faint);
+  }
+  .chart-axis line, .chart-axis path {
+    stroke: var(--line);
+    stroke-width: 1;
+    fill: none;
+  }
+  .chart-axis-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    fill: var(--ink-dim);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .grid-line {
+    stroke: var(--line);
+    stroke-width: 0.5;
+    stroke-dasharray: 2 3;
+  }
+  .data-point {
+    fill: var(--ink-dim);
+    fill-opacity: 0.5;
+    stroke: var(--ink-dim);
+    stroke-width: 1;
+    stroke-opacity: 0.6;
+    transition: all 0.2s;
+  }
+  .data-point.bw { fill: var(--blue); stroke: var(--blue); fill-opacity: 0.35; }
+  .data-point:hover {
+    fill-opacity: 1;
+    r: 5;
+  }
+  .regression-line {
+    fill: none;
+    stroke-width: 1.5;
+  }
+  .regression-line.bw { stroke: var(--blue); }
+  .regression-band {
+    fill-opacity: 0.08;
+    stroke: none;
+  }
+  .regression-band.bw { fill: var(--blue); }
+  .user-marker-line {
+    stroke: var(--accent);
+    stroke-width: 1;
+    stroke-dasharray: 4 3;
+  }
+  .user-marker-dot {
+    fill: var(--accent);
+    stroke: var(--bg-1);
+    stroke-width: 2;
+  }
+  .user-marker-out {
+    fill: var(--bg-1);
+    stroke: var(--accent);
+    stroke-width: 2;
+  }
+  .user-marker-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    fill: var(--accent);
+    font-weight: 500;
+  }
+
+  /* Legend */
+  .legend {
+    display: flex;
+    gap: 24px;
+    padding: 12px 20px 16px;
+    border-top: 1px solid var(--line);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-dim);
+    flex-wrap: wrap;
+  }
+  .legend-item { display: flex; align-items: center; gap: 8px; }
+  .legend-swatch {
+    width: 16px;
+    height: 2px;
+  }
+  .legend-swatch.bw { background: var(--blue); }
+  .legend-swatch.user {
+    background: var(--accent);
+  }
+
+  /* ========== GUIDELINE NOTES ========== */
+  .notes {
+    margin-top: 32px;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+  @media (max-width: 920px) {
+    .notes { grid-template-columns: 1fr; }
+  }
+  .note {
+    padding: 18px 20px;
+    background: var(--bg-1);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    transition: background-color 0.25s, border-color 0.25s;
+  }
+  .note-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--accent);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .note h3 {
+    font-family: 'Fraunces', serif;
+    font-size: 17px;
+    font-weight: 500;
+    margin-bottom: 8px;
+    color: var(--ink);
+  }
+  .note p {
+    font-size: 12.5px;
+    color: var(--ink-dim);
+    line-height: 1.6;
+  }
+  .note p code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11.5px;
+    color: var(--accent);
+    background: var(--bg-2);
+    padding: 1px 5px;
+    border-radius: 2px;
+  }
+
+  /* Footer formula */
+  footer {
+    margin-top: 48px;
+    padding-top: 20px;
+    border-top: 1px solid var(--line);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-faint);
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  footer code {
+    color: var(--ink-dim);
+  }
+
+  /* Subtle entrance animation */
+  @keyframes fade-up {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  header, .grid > *, .notes, footer {
+    animation: fade-up 0.5s ease-out backwards;
+  }
+  .grid > *:nth-child(1) { animation-delay: 0.05s; }
+  .grid > *:nth-child(2) { animation-delay: 0.15s; }
+  .notes { animation-delay: 0.25s; }
+  footer { animation-delay: 0.3s; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div class="header-text">
+      <div class="brand"><span class="dot">●</span> LIRA · 한국전력공사 배전케이블 진단</div>
+      <h1>케이블 긍장에 따른 <em>분석 주파수</em> 가이드</h1>
+      <div class="subtitle">현장 측정 데이터의 회귀분석 결과를 바탕으로, 시험 대상 케이블의 길이로부터 실효 분석 대역폭과 출력 주파수 설정값을 도출합니다.</div>
+    </div>
+    <button class="theme-toggle" id="themeToggle" aria-label="테마 전환">☀ LIGHT</button>
+  </header>
+
+  <div class="grid">
+
+    <!-- LEFT COLUMN: 입력 패널 + 결과 패널 -->
+    <div class="left-col">
+
+      <!-- 1. 케이블 입력 -->
+      <div class="panel">
+        <div class="panel-header">
+          <span><span class="num">1</span> &nbsp; 케이블 입력</span>
+        </div>
+        <div class="panel-body">
+        <div class="input-wrap">
+          <label class="input-label">케이블 긍장 (Cable Length)</label>
+          <div class="input-row">
+            <input type="number" id="lengthInput" min="20" max="20000" value="500" step="1">
+            <span class="unit">m</span>
+          </div>
+          <div class="presets">
+            <button class="preset" data-len="50">50</button>
+            <button class="preset" data-len="100">100</button>
+            <button class="preset" data-len="200">200</button>
+            <button class="preset" data-len="500">500</button>
+            <button class="preset" data-len="1000">1k</button>
+            <button class="preset" data-len="2000">2k</button>
+            <button class="preset" data-len="5000">5k</button>
+            <button class="preset" data-len="10000">10k</button>
+          </div>
+          <div class="slider-wrap">
+            <input type="range" id="lengthSlider" min="1.30103" max="4.30103" step="0.01" value="2.69897">
+            <div class="slider-marks">
+              <span>20m</span>
+              <span>200m</span>
+              <span>2km</span>
+              <span>20km</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      </div>
+
+      <!-- 2. 권장 분석 주파수 -->
+      <div class="panel">
+        <div class="panel-header">
+          <span><span class="num">2</span> &nbsp; 권장 분석 주파수</span>
+          <span id="confLevel">±1σ</span>
+        </div>
+
+      <!-- HERO: 실효 분석 대역폭 -->
+      <div class="hero">
+        <div class="hero-label">
+          실효 분석 대역폭
+          <small>Effective Analysis Bandwidth</small>
+        </div>
+        <div class="hero-value"><span id="bwOut">–</span><span class="hero-unit">MHz</span></div>
+        <div class="hero-range">
+          <span class="range-label">분석 범위 ±1σ</span>
+          <span class="range-values"><span id="bwLower">–</span> – <span id="bwUpper">–</span><small>MHz</small></span>
+        </div>
+      </div>
+
+      <!-- 출력 주파수 (설정값 선택) -->
+      <div class="output-block">
+        <div class="output-head">출력 주파수 · Output Frequency</div>
+        <div class="output-desc">LIRA 설정값 (MHz) — ±1σ 상한까지 커버하는 최소값 권장</div>
+        <div class="freq-chips" id="freqChips"></div>
+        <div class="output-readout" id="outputReadout">–</div>
+      </div>
+      </div>
+
+    </div>
+
+    <!-- CHART PANEL -->
+    <div class="chart-panel">
+      <div class="panel-header">
+        <span><span class="num">3</span> &nbsp; 회귀곡선 · 측정데이터 분포</span>
+        <span>LOG–LOG SCALE</span>
+      </div>
+      <div class="chart-wrap">
+        <svg class="chart" id="chart" viewBox="0 0 720 480" preserveAspectRatio="xMidYMid meet"></svg>
+      </div>
+      <div class="legend">
+        <div class="legend-item"><span class="legend-swatch bw"></span> BW (MHz) · 측정값</div>
+        <div class="legend-item"><span class="legend-swatch user"></span> 입력 케이블 · ◇ 출력 주파수</div>
+        <div class="legend-item" style="margin-left:auto; color: var(--ink-faint);">음영 영역 = ±1σ</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- GUIDELINE NOTES -->
+  <div class="notes">
+    <div class="note">
+      <div class="note-tag">Note 01 · 원리</div>
+      <h3>왜 케이블이 길수록 낮은 주파수인가</h3>
+      <p>케이블 내 신호는 길이에 비례하여 감쇠되며, 특히 고주파일수록 감쇠가 빠르게 누적됩니다. 따라서 긴 케이블에서는 종단단말까지 도달 가능한 신호 대역이 좁아져 <code>L × BW ≈ const</code> 관계를 따릅니다.</p>
+    </div>
+    <div class="note">
+      <div class="note-tag">Note 02 · 적용</div>
+      <h3>권장값은 절대적이지 않다</h3>
+      <p>측정위치로부터 가까운 거리에 접속점이나 국부적 변화가 있는 경우 대역폭을 조절해 가며 분석해야 하므로, 단일 값이 아닌 <code>±1σ</code> 범위를 함께 제시합니다. 출력 주파수는 이 범위의 <code>상한</code>까지 분석할 수 있도록, 상한 이상인 설정값 중 가장 작은 값을 권장합니다.</p>
+    </div>
+  </div>
+
+  <footer>
+    <div>
+      <code>BW(MHz) = 1126.70 × L<sup>−0.798</sup></code>
+      &nbsp;·&nbsp;
+      <code>참고 경향: MaxF = 3227.99 × L<sup>−0.787</sup></code>
+    </div>
+    <div>v0.4 · 부산울산본부 진단데이터 기반</div>
+  </footer>
+
+</div>
+
+<script>
+// ============ 회귀 모델 (LIRA 측정데이터 기반 · 유지) ============
+const FIT = {
+  bw:   { a: 1126.6950, b: -0.79810, sigma: 0.37532 },  // log-space σ
+  maxF: { a: 3227.9923, b: -0.78665, sigma: 0.57159 }
+};
+
+// ============ 출력 주파수 설정값 (LIRA 셋팅) ============
+const OUTPUT_FREQS = [0.1, 0.5, 1, 2, 5, 10, 25, 50, 100];
+
+// ============ 실측 데이터 (유지) ============
+const MEASURED = [
+  {n:'범내5',L:31,MaxF:100,BW:50},
+  {n:'수산9',L:55,MaxF:100,BW:60},
+  {n:'하마4-1',L:55,MaxF:100,BW:35},
+  {n:'암남7',L:66,MaxF:100,BW:15},
+  {n:'용두20',L:66,MaxF:100,BW:40},
+  {n:'부역4-부역5',L:75,MaxF:50,BW:37.5},
+  {n:'하마3',L:81,MaxF:50,BW:22.5},
+  {n:'수산6',L:98,MaxF:100,BW:40},
+  {n:'암남7-암남7-3',L:98,MaxF:50,BW:22.5},
+  {n:'온산316H2',L:113,MaxF:100,BW:40},
+  {n:'온정336',L:120,MaxF:100,BW:40},
+  {n:'부전25L1',L:126,MaxF:100,BW:20},
+  {n:'고래41',L:139,MaxF:100,BW:13},
+  {n:'동운1',L:142,MaxF:50,BW:30},
+  {n:'부두5',L:146,MaxF:100,BW:30},
+  {n:'남포SW11',L:150,MaxF:100,BW:40},
+  {n:'명성8S',L:166,MaxF:50,BW:20},
+  {n:'동국13#3',L:171,MaxF:100,BW:25},
+  {n:'암남7-3-암남7-1',L:175,MaxF:50,BW:10},
+  {n:'신백2',L:192,MaxF:100,BW:25},
+  {n:'동래10S',L:195,MaxF:50,BW:15},
+  {n:'하마2',L:213,MaxF:25,BW:16.25},
+  {n:'중앙20',L:223,MaxF:50,BW:20},
+  {n:'장생포29',L:340,MaxF:25,BW:14.25},
+  {n:'도서14-도서1',L:342,MaxF:50,BW:7.5},
+  {n:'연안8',L:359,MaxF:50,BW:5},
+  {n:'신백5',L:369,MaxF:25,BW:8.25},
+  {n:'여의1222',L:479,MaxF:25,BW:11.25},
+  {n:'지역1-지역5',L:554,MaxF:50,BW:7.5},
+  {n:'미포6',L:639,MaxF:50,BW:7.5},
+  {n:'동국13',L:641,MaxF:50,BW:12.5},
+  {n:'우면로',L:911,MaxF:25,BW:5},
+  {n:'강남동로',L:1233,MaxF:10,BW:4.5},
+  {n:'우두리-대경도',L:1278,MaxF:25,BW:3.75},
+  {n:'개금20',L:1374,MaxF:25,BW:5},
+  {n:'장산도-자라도',L:1557,MaxF:5,BW:3.25},
+  {n:'남성도-백일도',L:1574,MaxF:10,BW:4},
+  {n:'상수치도-상사치도',L:1689,MaxF:10,BW:3},
+  {n:'비금도-상수치도',L:2075,MaxF:5,BW:2.5},
+  {n:'소악도-당사도',L:2550,MaxF:1,BW:1},
+  {n:'보길도-넙도',L:2641,MaxF:5,BW:2},
+  {n:'등촌',L:2738,MaxF:10,BW:1.6},
+  {n:'공단S01',L:3274,MaxF:10,BW:3},
+  {n:'조약도-생일도',L:5556,MaxF:2,BW:0.8},
+  {n:'신지도-청산도',L:11015,MaxF:1,BW:0.5}
+];
+
+// ============ 예측 함수 ============
+function predict(L, fit) {
+  const center = fit.a * Math.pow(L, fit.b);
+  const lower = center * Math.exp(-fit.sigma);
+  const upper = center * Math.exp(fit.sigma);
+  return { center, lower, upper };
+}
+
+// 출력 주파수 권장 로직:
+// 권장값은 절대적이지 않다 — 측정위치 인근에 접속점·국부 변화가 있으면
+// 분석 시 대역폭을 조절해야 하므로, 출력 주파수는 ±1σ 상한(upper)까지
+// 커버할 수 있는 설정값 중 최솟값을 권장한다.
+function recommendOutput(bwCenter, bwUpper) {
+  const selectable = OUTPUT_FREQS.filter(f => f >= bwCenter);  // 선택 가능 (중심값 이상)
+  const covering = OUTPUT_FREQS.filter(f => f >= bwUpper);     // ±1σ 상한 커버
+  const overflow = covering.length === 0;                      // 상한 > 100 MHz
+  const exceed = selectable.length === 0;                      // 중심값 > 100 MHz
+  const primary = overflow ? 100 : Math.min(...covering);
+  return { selectable, primary, overflow, exceed };
+}
+
+function fmt(v) {
+  if (v >= 100) return v.toFixed(0);
+  if (v >= 10) return v.toFixed(1);
+  if (v >= 1) return v.toFixed(2);
+  return v.toFixed(3);
+}
+
+// ============ 상태 ============
+let currentL = 500;
+let selectedOutput = null;
+
+// ============ UI 업데이트 ============
+const lengthInput = document.getElementById('lengthInput');
+const lengthSlider = document.getElementById('lengthSlider');
+
+function update(L) {
+  L = Math.max(20, Math.min(20000, L));
+  currentL = L;
+
+  const bwPred = predict(L, FIT.bw);
+  const rec = recommendOutput(bwPred.center, bwPred.upper);
+  selectedOutput = rec.primary;
+
+  document.getElementById('bwOut').textContent = fmt(bwPred.center);
+  document.getElementById('bwLower').textContent = fmt(bwPred.lower);
+  document.getElementById('bwUpper').textContent = fmt(bwPred.upper);
+
+  renderChips(bwPred, rec);
+  renderReadout(bwPred, rec);
+  drawChart(L, selectedOutput);
+}
+
+function renderChips(pred, rec) {
+  const wrap = document.getElementById('freqChips');
+  wrap.innerHTML = '';
+  for (const f of OUTPUT_FREQS) {
+    const chip = document.createElement('button');
+    chip.className = 'chip';
+    const isValid = f >= pred.center || (rec.exceed && f === 100);
+    chip.classList.add(isValid ? 'valid' : 'invalid');
+    if (f === rec.primary) chip.classList.add('primary');
+    if (f === selectedOutput) chip.classList.add('selected');
+    chip.textContent = f;
+    chip.type = 'button';
+    if (isValid) {
+      chip.addEventListener('click', () => {
+        selectedOutput = f;
+        renderChips(pred, rec);
+        renderReadout(pred, rec);
+        drawChart(currentL, selectedOutput);
+      });
+    } else {
+      chip.disabled = true;
+    }
+    wrap.appendChild(chip);
+  }
+}
+
+function renderReadout(pred, rec) {
+  const el = document.getElementById('outputReadout');
+  const pctC = Math.min(100, Math.round((pred.center / selectedOutput) * 100));
+  const pctL = Math.min(100, Math.round((pred.lower / selectedOutput) * 100));
+  const pctU = Math.min(100, Math.round((pred.upper / selectedOutput) * 100));
+
+  if (rec.exceed) {
+    // 예측 BW 중심값 자체가 100 MHz 초과 (초단거리)
+    el.innerHTML =
+      `<span class="warn">예측 BW가 최대 출력(100 MHz)을 초과</span><br>` +
+      `→ <b>100 MHz</b> 설정 · LIRA BW 설정값 <b>100%</b>`;
+    return;
+  }
+
+  let line1;
+  if (selectedOutput === rec.primary) {
+    line1 = rec.overflow
+      ? `<span class="warn">±1σ 상한(${fmt(pred.upper)} MHz)이 최대 출력 초과</span> → <b>100 MHz</b> 설정`
+      : `권장 <b>${rec.primary} MHz</b> — ±1σ 상한(${fmt(pred.upper)} MHz) 커버`;
+  } else {
+    line1 = `선택 <b>${selectedOutput} MHz</b> <span style="color:var(--ink-faint)">(권장 ${rec.primary})</span>`;
+    if (selectedOutput < pred.upper) {
+      line1 += ` · <span class="warn">±1σ 상한 미커버</span>`;
+    }
+  }
+  const line2 =
+    `LIRA BW 설정 ≈ <b>${pctC}%</b> · 조절 범위 <b>${pctL} – ${pctU}%</b>`;
+  el.innerHTML = line1 + '<br>' + line2;
+}
+
+lengthInput.addEventListener('input', () => {
+  const v = parseFloat(lengthInput.value);
+  if (!isNaN(v) && v > 0) {
+    lengthSlider.value = Math.log10(v);
+    update(v);
+  }
+});
+
+lengthSlider.addEventListener('input', () => {
+  const v = Math.round(Math.pow(10, parseFloat(lengthSlider.value)));
+  lengthInput.value = v;
+  update(v);
+});
+
+document.querySelectorAll('.preset').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const v = parseFloat(btn.dataset.len);
+    lengthInput.value = v;
+    lengthSlider.value = Math.log10(v);
+    update(v);
+  });
+});
+
+// ============ 테마 전환 ============
+(function() {
+  const root = document.documentElement;
+  const btn = document.getElementById('themeToggle');
+  function setLabel(t) {
+    btn.textContent = (t === 'dark') ? '☀ LIGHT' : '☾ DARK';
+  }
+  let theme = 'dark';
+  try {
+    const saved = localStorage.getItem('lira-theme');
+    if (saved === 'light' || saved === 'dark') theme = saved;
+  } catch (e) { /* storage unavailable — fall back to default */ }
+  root.setAttribute('data-theme', theme);
+  setLabel(theme);
+  btn.addEventListener('click', () => {
+    theme = (theme === 'dark') ? 'light' : 'dark';
+    root.setAttribute('data-theme', theme);
+    setLabel(theme);
+    try { localStorage.setItem('lira-theme', theme); } catch (e) { /* ignore */ }
+  });
+})();
+
+// ============ SVG 차트 그리기 (log-log) ============
+const W = 720, H = 480;
+const M = { top: 20, right: 30, bottom: 60, left: 60 };
+const cw = W - M.left - M.right;
+const ch = H - M.top - M.bottom;
+
+// Domain (log10): X = 20 ~ 20000 m, Y = 0.1 ~ 200 MHz
+const X_MIN = Math.log10(20), X_MAX = Math.log10(20000);
+const Y_MIN = Math.log10(0.1), Y_MAX = Math.log10(200);
+
+function xPx(L) { return M.left + (Math.log10(L) - X_MIN) / (X_MAX - X_MIN) * cw; }
+function yPx(F) { return M.top + ch - (Math.log10(F) - Y_MIN) / (Y_MAX - Y_MIN) * ch; }
+
+function drawChart(userL, outputSel) {
+  const svg = document.getElementById('chart');
+  svg.innerHTML = '';
+  const NS = 'http://www.w3.org/2000/svg';
+  function el(name, attrs, text) {
+    const e = document.createElementNS(NS, name);
+    for (const k in attrs) e.setAttribute(k, attrs[k]);
+    if (text !== undefined) e.textContent = text;
+    return e;
+  }
+
+  // ----- gridlines -----
+  const xTicks = [20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000];
+  const yTicks = [0.1, 0.5, 1, 2, 5, 10, 25, 50, 100, 200];
+
+  for (const t of xTicks) {
+    const x = xPx(t);
+    svg.appendChild(el('line', {x1:x, y1:M.top, x2:x, y2:M.top+ch, class:'grid-line'}));
+  }
+  for (const t of yTicks) {
+    const y = yPx(t);
+    svg.appendChild(el('line', {x1:M.left, y1:y, x2:M.left+cw, y2:y, class:'grid-line'}));
+  }
+
+  // ----- regression bands (±1σ) -----
+  function pathBand(fit, cls) {
+    const samples = 80;
+    const pts = [];
+    for (let i = 0; i <= samples; i++) {
+      const Lx = Math.pow(10, X_MIN + (X_MAX - X_MIN) * i / samples);
+      const c = fit.a * Math.pow(Lx, fit.b);
+      const upper = c * Math.exp(fit.sigma);
+      pts.push([xPx(Lx), yPx(upper)]);
+    }
+    for (let i = samples; i >= 0; i--) {
+      const Lx = Math.pow(10, X_MIN + (X_MAX - X_MIN) * i / samples);
+      const c = fit.a * Math.pow(Lx, fit.b);
+      const lower = c * Math.exp(-fit.sigma);
+      pts.push([xPx(Lx), yPx(lower)]);
+    }
+    const d = 'M' + pts.map(p => p[0].toFixed(1)+','+p[1].toFixed(1)).join(' L') + ' Z';
+    return el('path', {d, class:'regression-band '+cls});
+  }
+  svg.appendChild(pathBand(FIT.bw, 'bw'));
+
+  // ----- regression lines -----
+  function pathLine(fit, cls) {
+    const samples = 200;
+    const pts = [];
+    for (let i = 0; i <= samples; i++) {
+      const Lx = Math.pow(10, X_MIN + (X_MAX - X_MIN) * i / samples);
+      const c = fit.a * Math.pow(Lx, fit.b);
+      pts.push(xPx(Lx).toFixed(1)+','+yPx(c).toFixed(1));
+    }
+    return el('path', {d: 'M' + pts.join(' L'), class: 'regression-line '+cls});
+  }
+  svg.appendChild(pathLine(FIT.bw, 'bw'));
+
+  // ----- data points (BW 측정값만 표시) -----
+  for (const d of MEASURED) {
+    if (d.L < 20 || d.L > 20000) continue;
+    const c2 = el('circle', {cx: xPx(d.L), cy: yPx(d.BW), r: 3.5, class:'data-point bw'});
+    c2.appendChild(el('title', {}, `${d.n} · ${d.L}m · BW ${d.BW}MHz`));
+    svg.appendChild(c2);
+  }
+
+  // ----- user marker -----
+  if (userL >= 20 && userL <= 20000) {
+    const ux = xPx(userL);
+    svg.appendChild(el('line', {x1:ux, y1:M.top, x2:ux, y2:M.top+ch, class:'user-marker-line'}));
+
+    // BW 예측점 (원형)
+    const bw = predict(userL, FIT.bw).center;
+    svg.appendChild(el('circle', {cx:ux, cy:yPx(bw), r:5, class:'user-marker-dot'}));
+
+    // 선택된 출력 주파수 (다이아몬드)
+    if (outputSel) {
+      const oy = yPx(outputSel);
+      const d = 5.5;
+      svg.appendChild(el('rect', {
+        x: ux - d, y: oy - d, width: d*2, height: d*2,
+        class: 'user-marker-out',
+        transform: `rotate(45 ${ux} ${oy})`
+      }));
+      const nearRight = ux > M.left + cw - 90;
+      const anchor = nearRight ? 'end' : 'start';
+      const tx = nearRight ? ux - 12 : ux + 12;
+      svg.appendChild(el('text', {
+        x: tx, y: oy + 4, 'text-anchor': anchor, class: 'user-marker-label'
+      }, `OUT ${outputSel}`));
+    }
+
+    // 상단 라벨
+    svg.appendChild(el('text', {
+      x: ux, y: M.top - 6, 'text-anchor':'middle', class:'user-marker-label'
+    }, `L = ${userL.toLocaleString()} m`));
+  }
+
+  // ----- axes -----
+  const axisG = el('g', {class:'chart-axis'});
+  axisG.appendChild(el('line', {x1:M.left, y1:M.top+ch, x2:M.left+cw, y2:M.top+ch}));
+  axisG.appendChild(el('line', {x1:M.left, y1:M.top, x2:M.left, y2:M.top+ch}));
+  for (const t of xTicks) {
+    const x = xPx(t);
+    axisG.appendChild(el('line', {x1:x, y1:M.top+ch, x2:x, y2:M.top+ch+4}));
+    const label = t >= 1000 ? (t/1000) + 'k' : String(t);
+    axisG.appendChild(el('text', {x, y:M.top+ch+16, 'text-anchor':'middle'}, label));
+  }
+  for (const t of yTicks) {
+    const y = yPx(t);
+    axisG.appendChild(el('line', {x1:M.left-4, y1:y, x2:M.left, y2:y}));
+    axisG.appendChild(el('text', {x:M.left-8, y:y+3, 'text-anchor':'end'}, String(t)));
+  }
+  axisG.appendChild(el('text', {
+    x: M.left + cw/2, y: M.top + ch + 42, 'text-anchor':'middle', class:'chart-axis-title'
+  }, '케이블 긍장 (m)'));
+  axisG.appendChild(el('text', {
+    x: -(M.top + ch/2), y: 18, 'text-anchor':'middle', class:'chart-axis-title',
+    transform:'rotate(-90)'
+  }, '주파수 (MHz)'));
+  svg.appendChild(axisG);
+}
+
+// initial render
+update(parseFloat(lengthInput.value));
+</script>
+</body>
+</html>
